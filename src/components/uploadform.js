@@ -34,12 +34,19 @@ export default function UploadForm() {
         setCapturing(true);
         setPreview(null);
         setFile(null);
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-                videoRef.current.play();
-            }
+        let stream = null;
+        try {
+            // Try to use the back camera
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { exact: "environment" } }
+            });
+        } catch (err) {
+            // Fallback to any camera if back camera is not available
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        }
+        if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.play();
         }
     };
 

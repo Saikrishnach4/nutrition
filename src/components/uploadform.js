@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import NutritionResult from './nutritionResult';
+import LoadingAnimation from './loadingAnimation';
 
 export default function UploadForm() {
     const [file, setFile] = useState(null);
@@ -8,6 +9,20 @@ export default function UploadForm() {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState('');
+    const [preview, setPreview] = useState(null);
+
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files?.[0];
+        setFile(selectedFile);
+        
+        if (selectedFile) {
+            const reader = new FileReader();
+            reader.onload = (e) => setPreview(e.target.result);
+            reader.readAsDataURL(selectedFile);
+        } else {
+            setPreview(null);
+        }
+    };
 
     const handleUpload = async () => {
         if (!file || !weight || !height) {
@@ -44,43 +59,146 @@ export default function UploadForm() {
         setLoading(false);
     };
 
+    const resetForm = () => {
+        setFile(null);
+        setPreview(null);
+        setWeight('');
+        setHeight('');
+        setResult(null);
+        setError('');
+    };
+
     return (
-        <div className="max-w-xl mx-auto p-4 mt-10 text-center space-y-4">
-            <label className="block text-lg font-semibold">Upload or Capture Food Image:</label>
+        <div className="max-w-4xl mx-auto p-6">
+            {/* Upload Section */}
+            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+                <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-8 text-white">
+                    <h2 className="text-2xl font-bold mb-2">📸 Upload Your Food</h2>
+                    <p className="text-emerald-100">Get instant nutrition analysis and personalized recommendations</p>
+                </div>
+                
+                <div className="p-8">
+                    <div className="grid md:grid-cols-2 gap-8">
+                        {/* Image Upload */}
+                        <div className="space-y-6">
+                            <div className="relative">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    capture="environment"
+                                    onChange={handleFileChange}
+                                    className="hidden"
+                                    id="image-upload"
+                                />
+                                <label
+                                    htmlFor="image-upload"
+                                    className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-all duration-300 hover:border-emerald-400 group"
+                                >
+                                    {preview ? (
+                                        <div className="relative w-full h-full">
+                                            <img
+                                                src={preview}
+                                                alt="Preview"
+                                                className="w-full h-full object-cover rounded-2xl"
+                                            />
+                                            <div className="absolute inset-0 bg-black bg-opacity-40 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                <span className="text-white font-medium">Click to change image</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center">
+                                            <div className="w-16 h-16 mx-auto mb-4 text-gray-400 group-hover:text-emerald-500 transition-colors duration-300">
+                                                <svg fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                                                </svg>
+                                            </div>
+                                            <p className="text-lg font-medium text-gray-700 mb-2">Upload or capture food image</p>
+                                            <p className="text-sm text-gray-500">PNG, JPG up to 10MB</p>
+                                        </div>
+                                    )}
+                                </label>
+                            </div>
+                        </div>
 
-            <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={(e) => setFile(e.target.files?.[0])}
-                className="file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
-            />
+                        {/* User Info */}
+                        <div className="space-y-6">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    ⚖️ Weight (kg)
+                                </label>
+                                <input
+                                    type="number"
+                                    placeholder="Enter your weight"
+                                    value={weight}
+                                    onChange={(e) => setWeight(e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-lg"
+                                />
+                            </div>
 
-            <input
-                type="number"
-                placeholder="Weight (kg)"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                className="w-full border p-2 rounded"
-            />
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    📏 Height (feet)
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    placeholder="Enter your height"
+                                    value={height}
+                                    onChange={(e) => setHeight(e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-lg"
+                                />
+                            </div>
 
-            <input
-                type="number"
-                placeholder="Height (feet)"
-                value={height}
-                onChange={(e) => setHeight(e.target.value)}
-                className="w-full border p-2 rounded"
-            />
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    onClick={handleUpload}
+                                    disabled={loading || !file || !weight || !height}
+                                    className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-4 rounded-xl font-semibold text-lg hover:from-emerald-600 hover:to-teal-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 shadow-lg hover:shadow-xl"
+                                >
+                                    {loading ? (
+                                        <span className="flex items-center justify-center">
+                                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Analyzing...
+                                        </span>
+                                    ) : (
+                                        '🔍 Analyze Nutrition'
+                                    )}
+                                </button>
+                                
+                                {(file || result) && (
+                                    <button
+                                        onClick={resetForm}
+                                        className="px-6 py-4 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:border-gray-400 hover:bg-gray-50 transition-all duration-300"
+                                    >
+                                        Reset
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
 
-            <button
-                onClick={handleUpload}
-                disabled={loading}
-                className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
-            >
-                {loading ? 'Analyzing...' : 'Upload & Analyze'}
-            </button>
+                    {error && (
+                        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                            <div className="flex items-center">
+                                <div className="text-red-400 mr-3">
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <p className="text-red-800 font-medium">{error}</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
 
-            {error && <p className="text-red-600 font-medium mt-4">{error}</p>}
+            {/* Loading Animation */}
+            {loading && <LoadingAnimation />}
+
+            {/* Results */}
             {result && <NutritionResult result={result} />}
         </div>
     );

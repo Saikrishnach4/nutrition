@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
 import NutritionResult from './nutritionResult';
 import LoadingAnimation from './loadingAnimation';
@@ -11,6 +11,10 @@ export default function UploadForm() {
     const [result, setResult] = useState(null);
     const [error, setError] = useState('');
     const [preview, setPreview] = useState(null);
+    const [showCamera, setShowCamera] = useState(false);
+    const [capturing, setCapturing] = useState(false);
+    const videoRef = useRef(null);
+    const canvasRef = useRef(null);
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files?.[0];
@@ -23,6 +27,54 @@ export default function UploadForm() {
         } else {
             setPreview(null);
         }
+    };
+
+    const handleTakePhotoClick = async () => {
+        setShowCamera(true);
+        setCapturing(true);
+        setPreview(null);
+        setFile(null);
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+                videoRef.current.play();
+            }
+        }
+    };
+
+    const handleCapture = () => {
+        if (videoRef.current && canvasRef.current) {
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    const capturedFile = new File([blob], 'captured.jpg', { type: 'image/jpeg' });
+                    setFile(capturedFile);
+                    setPreview(URL.createObjectURL(blob));
+                }
+            }, 'image/jpeg');
+            // Stop camera
+            const stream = video.srcObject;
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            setShowCamera(false);
+            setCapturing(false);
+        }
+    };
+
+    const handleCancelCamera = () => {
+        if (videoRef.current && videoRef.current.srcObject) {
+            const stream = videoRef.current.srcObject;
+            stream.getTracks().forEach(track => track.stop());
+        }
+        setShowCamera(false);
+        setCapturing(false);
     };
 
     const handleUpload = async () => {
@@ -71,13 +123,25 @@ export default function UploadForm() {
 
     return (
         <div className="max-w-4xl mx-auto p-6">
+            {/* Camera Modal */}
+            {showCamera && (
+                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-2xl p-6 flex flex-col items-center">
+                        <video ref={videoRef} className="rounded-xl mb-4" autoPlay playsInline width={400} height={300} />
+                        <canvas ref={canvasRef} style={{ display: 'none' }} />
+                        <div className="flex gap-4">
+                            <button onClick={handleCapture} className="bg-emerald-500 text-white px-6 py-2 rounded-xl font-semibold hover:bg-emerald-600">Capture</button>
+                            <button onClick={handleCancelCamera} className="bg-gray-300 text-gray-700 px-6 py-2 rounded-xl font-semibold hover:bg-gray-400">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* Upload Section */}
             <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
                 <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-8 text-white">
                     <h2 className="text-2xl font-bold mb-2">📸 Upload Your Food</h2>
                     <p className="text-emerald-100">Get instant nutrition analysis and personalized recommendations</p>
                 </div>
-                
                 <div className="p-8">
                     <div className="grid md:grid-cols-2 gap-8">
                         {/* Image Upload */}
@@ -98,8 +162,8 @@ export default function UploadForm() {
                                     {preview ? (
                                         <div className="relative w-full h-full">
                                             <Image 
-                                            width={300} // required
-                                            height={200} 
+                                                width={300}
+                                                height={200}
                                                 src={preview}
                                                 alt="Preview"
                                                 className="w-full h-full object-cover rounded-2xl"
@@ -120,6 +184,13 @@ export default function UploadForm() {
                                         </div>
                                     )}
                                 </label>
+                                <button
+                                    type="button"
+                                    onClick={handleTakePhotoClick}
+                                    className="absolute bottom-4 right-4 bg-emerald-500 text-white px-4 py-2 rounded-xl font-semibold shadow hover:bg-emerald-600 transition-all duration-300"
+                                >
+                                    📷 Take Photo
+                                </button>
                             </div>
                         </div>
 

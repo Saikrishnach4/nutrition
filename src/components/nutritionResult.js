@@ -3,7 +3,7 @@ import { useState } from 'react';
 export default function NutritionResult({ result }) {
     const [activeTab, setActiveTab] = useState('overview');
 
-    // Enhanced parsing to extract food items table and nutrition data
+    // Parse the result to extract nutrition data and create structured information
     const parseNutritionData = (text) => {
         // Extract nutrition values using regex patterns
         const caloriesMatch = text.match(/(\d+)\s*(?:calories|kcal|cal)/i);
@@ -25,64 +25,6 @@ export default function NutritionResult({ result }) {
         };
     };
 
-    // Parse food items table from AI response
-    const parseFoodItemsTable = (text) => {
-        const lines = text.split('\n');
-        const foodItems = [];
-        let inTable = false;
-        
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-            
-            // Check if we're entering a table
-            if (line.includes('|') && (line.includes('Food Item') || line.includes('Quantity') || line.includes('Calories'))) {
-                inTable = true;
-                continue;
-            }
-            
-            // Skip separator lines
-            if (line.includes('---') || line.includes('===')) {
-                continue;
-            }
-            
-            // Parse table rows
-            if (inTable && line.includes('|')) {
-                const columns = line.split('|').map(col => col.trim()).filter(col => col);
-                
-                if (columns.length >= 5 && !columns[0].toLowerCase().includes('food item') && !columns[0].toLowerCase().includes('total')) {
-                    foodItems.push({
-                        name: columns[0] || 'Unknown Food',
-                        quantity: columns[1] || 'N/A',
-                        calories: parseInt(columns[2]) || 0,
-                        protein: parseFloat(columns[3]) || 0,
-                        carbs: parseFloat(columns[4]) || 0,
-                        fat: parseFloat(columns[5]) || 0
-                    });
-                }
-                
-                // Check for total row
-                if (columns[0].toLowerCase().includes('total')) {
-                    return {
-                        items: foodItems,
-                        total: {
-                            calories: parseInt(columns[2]) || 0,
-                            protein: parseFloat(columns[3]) || 0,
-                            carbs: parseFloat(columns[4]) || 0,
-                            fat: parseFloat(columns[5]) || 0
-                        }
-                    };
-                }
-            }
-            
-            // Exit table if we hit an empty line or non-table content
-            if (inTable && !line.includes('|') && line.length > 0) {
-                break;
-            }
-        }
-        
-        return { items: foodItems, total: null };
-    };
-
     // Parse the result to extract different sections
     const parseResult = (text) => {
         const sections = {
@@ -98,7 +40,7 @@ export default function NutritionResult({ result }) {
         
         lines.forEach(line => {
             const lowerLine = line.toLowerCase();
-            if (lowerLine.includes('nutrition') || lowerLine.includes('breakdown')) {
+            if (lowerLine.includes('nutrition') || lowerLine.includes('calories') || lowerLine.includes('protein')) {
                 currentSection = 'nutrition';
             } else if (lowerLine.includes('recommend') || lowerLine.includes('suitable')) {
                 currentSection = 'recommendations';
@@ -116,10 +58,6 @@ export default function NutritionResult({ result }) {
 
     const sections = parseResult(result);
     const nutritionData = parseNutritionData(result);
-    const foodItemsData = parseFoodItemsTable(result);
-
-    // Use parsed total if available, otherwise use extracted nutrition data
-    const finalNutritionData = foodItemsData.total || nutritionData;
 
     // Calculate daily value percentages (based on 2000 calorie diet)
     const calculateDV = (nutrient, value) => {
@@ -137,9 +75,9 @@ export default function NutritionResult({ result }) {
     const nutritionTableData = [
         {
             nutrient: 'Calories',
-            amount: finalNutritionData.calories,
+            amount: nutritionData.calories,
             unit: 'kcal',
-            dailyValue: calculateDV('calories', finalNutritionData.calories),
+            dailyValue: calculateDV('calories', nutritionData.calories),
             icon: '🔥',
             color: 'from-red-500 to-orange-500',
             bgColor: 'from-red-50 to-orange-50',
@@ -147,9 +85,9 @@ export default function NutritionResult({ result }) {
         },
         {
             nutrient: 'Protein',
-            amount: finalNutritionData.protein,
+            amount: nutritionData.protein,
             unit: 'g',
-            dailyValue: calculateDV('protein', finalNutritionData.protein),
+            dailyValue: calculateDV('protein', nutritionData.protein),
             icon: '💪',
             color: 'from-blue-500 to-cyan-500',
             bgColor: 'from-blue-50 to-cyan-50',
@@ -157,9 +95,9 @@ export default function NutritionResult({ result }) {
         },
         {
             nutrient: 'Carbohydrates',
-            amount: finalNutritionData.carbs,
+            amount: nutritionData.carbs,
             unit: 'g',
-            dailyValue: calculateDV('carbs', finalNutritionData.carbs),
+            dailyValue: calculateDV('carbs', nutritionData.carbs),
             icon: '⚡',
             color: 'from-yellow-500 to-amber-500',
             bgColor: 'from-yellow-50 to-amber-50',
@@ -167,9 +105,9 @@ export default function NutritionResult({ result }) {
         },
         {
             nutrient: 'Total Fat',
-            amount: finalNutritionData.fat,
+            amount: nutritionData.fat,
             unit: 'g',
-            dailyValue: calculateDV('fat', finalNutritionData.fat),
+            dailyValue: calculateDV('fat', nutritionData.fat),
             icon: '🥑',
             color: 'from-green-500 to-emerald-500',
             bgColor: 'from-green-50 to-emerald-50',
@@ -177,9 +115,9 @@ export default function NutritionResult({ result }) {
         },
         {
             nutrient: 'Fiber',
-            amount: finalNutritionData.fiber || 0,
+            amount: nutritionData.fiber,
             unit: 'g',
-            dailyValue: calculateDV('fiber', finalNutritionData.fiber || 0),
+            dailyValue: calculateDV('fiber', nutritionData.fiber),
             icon: '🌾',
             color: 'from-amber-500 to-orange-500',
             bgColor: 'from-amber-50 to-orange-50',
@@ -187,7 +125,7 @@ export default function NutritionResult({ result }) {
         },
         {
             nutrient: 'Sugar',
-            amount: finalNutritionData.sugar || 0,
+            amount: nutritionData.sugar,
             unit: 'g',
             dailyValue: 0, // No established DV for sugar
             icon: '🍯',
@@ -197,9 +135,9 @@ export default function NutritionResult({ result }) {
         },
         {
             nutrient: 'Sodium',
-            amount: finalNutritionData.sodium || 0,
+            amount: nutritionData.sodium,
             unit: 'mg',
-            dailyValue: calculateDV('sodium', finalNutritionData.sodium || 0),
+            dailyValue: calculateDV('sodium', nutritionData.sodium),
             icon: '🧂',
             color: 'from-gray-500 to-slate-500',
             bgColor: 'from-gray-50 to-slate-50',
@@ -259,90 +197,43 @@ export default function NutritionResult({ result }) {
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-2xl">🔥</span>
                                         <span className="text-xs font-semibold text-red-600 bg-red-100 px-2 py-1 rounded-full">
-                                            {calculateDV('calories', finalNutritionData.calories)}% DV
+                                            {calculateDV('calories', nutritionData.calories)}% DV
                                         </span>
                                     </div>
-                                    <h3 className="font-bold text-red-800 text-lg">{finalNutritionData.calories}</h3>
+                                    <h3 className="font-bold text-red-800 text-lg">{nutritionData.calories}</h3>
                                     <p className="text-red-600 text-sm">Calories</p>
                                 </div>
                                 <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-2xl border border-blue-200">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-2xl">💪</span>
                                         <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
-                                            {calculateDV('protein', finalNutritionData.protein)}% DV
+                                            {calculateDV('protein', nutritionData.protein)}% DV
                                         </span>
                                     </div>
-                                    <h3 className="font-bold text-blue-800 text-lg">{finalNutritionData.protein}g</h3>
+                                    <h3 className="font-bold text-blue-800 text-lg">{nutritionData.protein}g</h3>
                                     <p className="text-blue-600 text-sm">Protein</p>
                                 </div>
                                 <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-2xl border border-yellow-200">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-2xl">⚡</span>
                                         <span className="text-xs font-semibold text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full">
-                                            {calculateDV('carbs', finalNutritionData.carbs)}% DV
+                                            {calculateDV('carbs', nutritionData.carbs)}% DV
                                         </span>
                                     </div>
-                                    <h3 className="font-bold text-yellow-800 text-lg">{finalNutritionData.carbs}g</h3>
+                                    <h3 className="font-bold text-yellow-800 text-lg">{nutritionData.carbs}g</h3>
                                     <p className="text-yellow-600 text-sm">Carbs</p>
                                 </div>
                                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border border-green-200">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-2xl">🥑</span>
                                         <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">
-                                            {calculateDV('fat', finalNutritionData.fat)}% DV
+                                            {calculateDV('fat', nutritionData.fat)}% DV
                                         </span>
                                     </div>
-                                    <h3 className="font-bold text-green-800 text-lg">{finalNutritionData.fat}g</h3>
+                                    <h3 className="font-bold text-green-800 text-lg">{nutritionData.fat}g</h3>
                                     <p className="text-green-600 text-sm">Fat</p>
                                 </div>
                             </div>
-
-                            {/* Food Items Breakdown Table */}
-                            {foodItemsData.items.length > 0 && (
-                                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-200">
-                                    <h3 className="text-xl font-bold text-indigo-800 mb-4 flex items-center">
-                                        <span className="mr-2">📋</span>
-                                        Estimated Nutritional Breakdown
-                                    </h3>
-                                    
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full bg-white rounded-xl shadow-sm border border-gray-200">
-                                            <thead>
-                                                <tr className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
-                                                    <th className="px-6 py-4 text-left font-semibold rounded-tl-xl">Food Item</th>
-                                                    <th className="px-6 py-4 text-left font-semibold">Quantity</th>
-                                                    <th className="px-6 py-4 text-center font-semibold">Calories</th>
-                                                    <th className="px-6 py-4 text-center font-semibold">Protein (g)</th>
-                                                    <th className="px-6 py-4 text-center font-semibold">Carbs (g)</th>
-                                                    <th className="px-6 py-4 text-center font-semibold rounded-tr-xl">Fat (g)</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-gray-200">
-                                                {foodItemsData.items.map((item, index) => (
-                                                    <tr key={index} className="hover:bg-gray-50 transition-colors duration-200">
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{item.name}</td>
-                                                        <td className="px-6 py-4 text-gray-700">{item.quantity}</td>
-                                                        <td className="px-6 py-4 text-center font-semibold text-red-600">{item.calories}</td>
-                                                        <td className="px-6 py-4 text-center font-semibold text-blue-600">{item.protein}</td>
-                                                        <td className="px-6 py-4 text-center font-semibold text-yellow-600">{item.carbs}</td>
-                                                        <td className="px-6 py-4 text-center font-semibold text-green-600">{item.fat}</td>
-                                                    </tr>
-                                                ))}
-                                                {foodItemsData.total && (
-                                                    <tr className="bg-gradient-to-r from-gray-100 to-gray-200 font-bold">
-                                                        <td className="px-6 py-4 font-bold text-gray-900">Total</td>
-                                                        <td className="px-6 py-4"></td>
-                                                        <td className="px-6 py-4 text-center font-bold text-red-700 text-lg">{foodItemsData.total.calories}</td>
-                                                        <td className="px-6 py-4 text-center font-bold text-blue-700 text-lg">{foodItemsData.total.protein}</td>
-                                                        <td className="px-6 py-4 text-center font-bold text-yellow-700 text-lg">{foodItemsData.total.carbs}</td>
-                                                        <td className="px-6 py-4 text-center font-bold text-green-700 text-lg">{foodItemsData.total.fat}</td>
-                                                    </tr>
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            )}
 
                             {/* Overview Text */}
                             <div className="bg-gray-50 p-6 rounded-2xl">
@@ -362,7 +253,7 @@ export default function NutritionResult({ result }) {
                             <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border border-green-200">
                                 <h3 className="text-2xl font-bold text-green-800 mb-6 flex items-center">
                                     <span className="mr-3">🍎</span>
-                                    Nutrition Facts Per Serving
+                                    Detailed Nutritional Breakdown
                                 </h3>
                                 
                                 {/* Nutrition Facts Table */}

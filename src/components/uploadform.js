@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Image from 'next/image';
 import NutritionResult from './nutritionResult';
 import LoadingAnimation from './loadingAnimation';
 
@@ -96,7 +97,9 @@ export default function UploadForm() {
                                 >
                                     {preview ? (
                                         <div className="relative w-full h-full">
-                                            <img
+                                            <Image 
+                                            width={300} // required
+                                            height={200} 
                                                 src={preview}
                                                 alt="Preview"
                                                 className="w-full h-full object-cover rounded-2xl"

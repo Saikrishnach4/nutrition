@@ -216,10 +216,11 @@ export default function NutritionResult({ result, weight, height }){
                         <div className="space-y-8 animate-slideIn">
                             {/* Food Description */}
                             <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-2xl border border-emerald-200">
-                                <h3 className="text-xl font-bold text-emerald-800 mb-4 flex items-center">
-                                    <span className="mr-2">🍱</span>
-                                    What's on the Plate?
-                                </h3>
+                            <h3 className="text-xl font-bold text-emerald-800 mb-4 flex items-center">
+    <span className="mr-2">🍱</span>
+    What&apos;s on the Plate?
+</h3>
+
                                 <p className="text-emerald-700 leading-relaxed">
                                     {sections.foodDescription || 'Food analysis will appear here...'}
                                 </p>

@@ -130,7 +130,7 @@ export default function UploadForm() {
                                     type="number"
                                     placeholder="Enter your weight"
                                     value={weight}
-                                    onChange={(e) => setWeight(e.target.value)}
+                                    onChange={(e) => setWeight(parseFloat(e.target.value))}
                                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-lg"
                                 />
                             </div>
@@ -144,7 +144,7 @@ export default function UploadForm() {
                                     step="0.1"
                                     placeholder="Enter your height"
                                     value={height}
-                                    onChange={(e) => setHeight(e.target.value)}
+                                    onChange={(e) => setHeight(parseFloat(e.target.value))}
                                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-lg"
                                 />
                             </div>
@@ -199,7 +199,8 @@ export default function UploadForm() {
             {loading && <LoadingAnimation />}
 
             {/* Results */}
-            {result && <NutritionResult result={result} />}
+            {result && <NutritionResult result={result} weight={weight} height={height} />}
+
         </div>
     );
 }

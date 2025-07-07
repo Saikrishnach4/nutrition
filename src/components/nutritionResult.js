@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function NutritionResult({ result }) {
+export default function NutritionResult({ result, weight, height }){
     const [activeTab, setActiveTab] = useState('overview');
 
     // Parse the structured response from the API
@@ -122,15 +122,42 @@ export default function NutritionResult({ result }) {
 
     // Calculate daily value percentages
     const calculateDV = (nutrient, value) => {
-        const dailyValues = {
-            calories: 2000,
-            protein: 50,
-            carbs: 300,
-            fat: 65
-        };
+        // const defaultWeight = 70;
+        // const defaultHeight = 5.8;
+    
+        const weightValue = weight ;
+        const heightValue = height ;
+    
+        const dailyValues = calculateDailyValues(weightValue, heightValue);
         return dailyValues[nutrient] ? Math.round((value / dailyValues[nutrient]) * 100) : 0;
     };
-
+    
+    
+    const calculateDailyValues = (weightKg, heightFeet) => {
+        const heightCm = heightFeet * 30.48;
+        const age = 25; // You can later make this dynamic
+        const genderConstant = 5; // 5 for male, -161 for female (if you want gender-based)
+    
+        const bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + genderConstant;
+        const totalCalories = bmr * 1.4; // light activity multiplier
+    
+        const proteinGrams = weightKg * 1.6;
+        const proteinCalories = proteinGrams * 4;
+    
+        const fatCalories = totalCalories * 0.3;
+        const fatGrams = fatCalories / 9;
+    
+        const carbCalories = totalCalories - (proteinCalories + fatCalories);
+        const carbGrams = carbCalories / 4;
+    
+        return {
+            calories: Math.round(totalCalories),
+            protein: Math.round(proteinGrams),
+            carbs: Math.round(carbGrams),
+            fat: Math.round(fatGrams),
+        };
+    };
+    
     // Get BMI status color
     const getBMIStatus = (bmi) => {
         if (bmi < 18.5) return { color: 'text-blue-600', bg: 'bg-blue-100', status: 'Underweight' };

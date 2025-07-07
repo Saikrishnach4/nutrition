@@ -150,7 +150,6 @@ export default function UploadForm() {
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    capture="environment"
                                     onChange={handleFileChange}
                                     className="hidden"
                                     id="image-upload"

@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import Image from 'next/image';
 import NutritionResult from './nutritionResult';
 import LoadingAnimation from './loadingAnimation';
+import toast from 'react-hot-toast';
 
 export default function UploadForm() {
     const [file, setFile] = useState(null);
@@ -18,9 +19,12 @@ export default function UploadForm() {
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files?.[0];
-        setFile(selectedFile);
-        
         if (selectedFile) {
+            if (selectedFile.size > 10 * 1024 * 1024) { // 10MB
+                toast.error('Image size should be less than 10MB');
+                return;
+            }
+            setFile(selectedFile);
             const reader = new FileReader();
             reader.onload = (e) => setPreview(e.target.result);
             reader.readAsDataURL(selectedFile);

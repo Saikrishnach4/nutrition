@@ -207,6 +207,7 @@ export default function UploadForm() {
                                     ⚖️ Weight (kg)
                                 </label>
                                 <input
+                                style={{color:"black"}}
                                     type="number"
                                     placeholder="Enter your weight"
                                     value={weight}
@@ -220,6 +221,7 @@ export default function UploadForm() {
                                     📏 Height (feet)
                                 </label>
                                 <input
+                                 style={{color:"black"}}
                                     type="number"
                                     step="0.1"
                                     placeholder="Enter your height"

@@ -20,7 +20,7 @@ export default function UploadForm() {
     const handleFileChange = (e) => {
         const selectedFile = e.target.files?.[0];
         if (selectedFile) {
-            if (selectedFile.size > 10 * 1024 * 1024) { // 10MB
+            if (selectedFile.size > 9.5 * 1024 * 1024) { // 10MB
                 toast.error('Image size should be less than 10MB');
                 return;
             }

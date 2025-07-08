@@ -1,11 +1,7 @@
 import { useState } from 'react';
-import { useSession, signIn } from 'next-auth/react';
-import { useRouter } from 'next/router';
 
 export default function PricingSection() {
     const [billingCycle, setBillingCycle] = useState('monthly');
-    const { data: session } = useSession();
-    const router = useRouter();
 
     const plans = [
         {
@@ -62,38 +58,10 @@ export default function PricingSection() {
         }
     ];
 
-    const handleSubscribe = async (plan) => {
-        if (!session) {
-            signIn();
-            return;
-        }
-
-        // Redirect to checkout
-        router.push(`/checkout?plan=${plan.name.toLowerCase()}&cycle=${billingCycle}`);
-    };
-
-    const getColorClasses = (color, type = 'bg') => {
-        const colors = {
-            gray: {
-                bg: 'bg-gray-500',
-                border: 'border-gray-200',
-                text: 'text-gray-600',
-                button: 'bg-gray-600 hover:bg-gray-700'
-            },
-            blue: {
-                bg: 'bg-blue-500',
-                border: 'border-blue-200',
-                text: 'text-blue-600',
-                button: 'bg-blue-600 hover:bg-blue-700'
-            },
-            purple: {
-                bg: 'bg-purple-500',
-                border: 'border-purple-200',
-                text: 'text-purple-600',
-                button: 'bg-purple-600 hover:bg-purple-700'
-            }
-        };
-        return colors[color][type];
+    const handleSubscribe = (plan) => {
+        // TODO: Implement subscription logic
+        console.log(`Selected plan: ${plan.name} - ${billingCycle}`);
+        alert(`You selected ${plan.name} plan (${billingCycle}). Backend integration needed.`);
     };
 
     return (

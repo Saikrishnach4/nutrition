@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import Header from '../components/Header';
 import PricingSection from '../components/PricingSection';
+import PricingSection from '../components/PricingSection';
 import UploadForm from '../components/uploadform';
 
 export default function Home() {
@@ -58,6 +59,11 @@ export default function Home() {
         <div className="relative">
           <UploadForm />
         </div>
+
+        {/* Pricing Section */}
+        <section id="pricing">
+          <PricingSection />
+        </section>
 
         {/* Pricing Section */}
         <section id="pricing">

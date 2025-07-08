@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { signIn, signUp } from 'next-auth/react';
-import Image from 'next/image';
 
 export default function AuthModal({ isOpen, onClose, defaultTab = 'signin' }) {
     const [activeTab, setActiveTab] = useState(defaultTab);
@@ -28,23 +26,14 @@ export default function AuthModal({ isOpen, onClose, defaultTab = 'signin' }) {
         setLoading(true);
         setError('');
 
-        try {
-            const result = await signIn('credentials', {
-                email: formData.email,
-                password: formData.password,
-                redirect: false
-            });
-
-            if (result?.error) {
-                setError('Invalid email or password');
-            } else {
-                onClose();
-            }
-        } catch (err) {
-            setError('Something went wrong. Please try again.');
-        }
-
-        setLoading(false);
+        // TODO: Implement sign in logic
+        console.log('Sign in attempt:', { email: formData.email });
+        
+        // Simulate API call
+        setTimeout(() => {
+            setLoading(false);
+            alert('Sign in functionality needs backend implementation');
+        }, 1000);
     };
 
     const handleSignUp = async (e) => {
@@ -58,41 +47,23 @@ export default function AuthModal({ isOpen, onClose, defaultTab = 'signin' }) {
             return;
         }
 
-        try {
-            const response = await fetch('/api/auth/signup', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    name: formData.name,
-                    email: formData.email,
-                    password: formData.password
-                }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                // Auto sign in after successful signup
-                await signIn('credentials', {
-                    email: formData.email,
-                    password: formData.password,
-                    redirect: false
-                });
-                onClose();
-            } else {
-                setError(data.message || 'Something went wrong');
-            }
-        } catch (err) {
-            setError('Something went wrong. Please try again.');
-        }
-
-        setLoading(false);
+        // TODO: Implement sign up logic
+        console.log('Sign up attempt:', { 
+            name: formData.name, 
+            email: formData.email 
+        });
+        
+        // Simulate API call
+        setTimeout(() => {
+            setLoading(false);
+            alert('Sign up functionality needs backend implementation');
+        }, 1000);
     };
 
     const handleGoogleSignIn = () => {
-        signIn('google', { callbackUrl: '/' });
+        // TODO: Implement Google OAuth
+        console.log('Google sign in clicked');
+        alert('Google OAuth needs backend implementation');
     };
 
     return (

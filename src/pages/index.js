@@ -1,4 +1,6 @@
 import Head from 'next/head';
+import Header from '../components/Header';
+import PricingSection from '../components/PricingSection';
 import UploadForm from '../components/uploadform';
 
 export default function Home() {
@@ -9,6 +11,8 @@ export default function Home() {
         <meta name="description" content="Get instant nutrition analysis and personalized recommendations with AI-powered food recognition" />
       </Head>
       <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <Header />
+        
         {/* Hero Section */}
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-500/10"></div>
@@ -55,8 +59,13 @@ export default function Home() {
           <UploadForm />
         </div>
 
+        {/* Pricing Section */}
+        <section id="pricing">
+          <PricingSection />
+        </section>
+
         {/* Features Section */}
-        <div className="max-w-7xl mx-auto px-6 py-16">
+        <section id="features" className="max-w-7xl mx-auto px-6 py-16">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Dishalyze?</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
@@ -89,7 +98,7 @@ export default function Home() {
               </p>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Footer */}
         <footer className="bg-white border-t border-gray-200 mt-16">

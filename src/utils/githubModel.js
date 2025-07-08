@@ -2,7 +2,7 @@ import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
 import { AzureKeyCredential } from "@azure/core-auth";
 
 const endpoint = "https://models.github.ai/inference";
-const model = "openai/gpt-4.1";
+const model = "openai/gpt-4o";
 const token = process.env.GITHUB_TOKEN;
 
 export async function callGitHubModelVision(base64Image, weight, height) {

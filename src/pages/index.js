@@ -1,7 +1,6 @@
 import Head from 'next/head';
 import Header from '../components/Header';
 import PricingSection from '../components/PricingSection';
-import PricingSection from '../components/PricingSection';
 import UploadForm from '../components/uploadform';
 
 export default function Home() {

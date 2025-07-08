@@ -94,7 +94,7 @@ export default function Header() {
                                             </div>
                                             <button
                                                 onClick={() => {
-                                                    console.log('Dashboard clicked');
+                                                    router.push('/UserDashboard');
                                                     setShowUserMenu(false);
                                                 }}
                                                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -103,7 +103,7 @@ export default function Header() {
                                             </button>
                                             <button
                                                 onClick={() => {
-                                                    console.log('Profile clicked');
+                                                    router.push('/settings');
                                                     setShowUserMenu(false);
                                                 }}
                                                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -112,7 +112,7 @@ export default function Header() {
                                             </button>
                                             <button
                                                 onClick={() => {
-                                                    console.log('Subscription clicked');
+                                                    router.push('/subscription');
                                                     setShowUserMenu(false);
                                                 }}
                                                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"

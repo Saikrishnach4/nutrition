@@ -17,6 +17,8 @@ async function migrateGoogleUsers() {
       console.log(`Skipping ${gUser.email} (already exists in User collection)`);
       continue;
     }
+    const createdAt = gUser.createdAt || new Date();
+    const trialEndsAt = new Date(createdAt.getTime() + 30 * 24 * 60 * 60 * 1000);
     await User.create({
       name: gUser.name,
       email: gUser.email,
@@ -24,11 +26,11 @@ async function migrateGoogleUsers() {
       image: gUser.picture || gUser.image || '',
       subscription: gUser.subscription || 'free',
       subscriptionStatus: gUser.subscriptionStatus || 'active',
-      trialEndsAt: gUser.trialEndsAt,
-      planStartDate: gUser.planStartDate || gUser.createdAt || new Date(),
+      trialEndsAt,
+      planStartDate: gUser.planStartDate || createdAt,
       planEndDate: gUser.planEndDate || null,
-      lastLoginAt: gUser.lastLoginAt || gUser.createdAt || new Date(),
-      createdAt: gUser.createdAt || new Date()
+      lastLoginAt: gUser.lastLoginAt || createdAt,
+      createdAt
     });
     migrated++;
     console.log(`Migrated Google user: ${gUser.email}`);

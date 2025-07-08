@@ -8,8 +8,7 @@ async function updateManualUsers() {
   const updates = users.map(async (user) => {
     user.subscription = 'free';
     user.subscriptionStatus = 'active';
-    const baseDate = user.createdAt || new Date();
-    user.trialEndsAt = new Date(baseDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+    user.trialEndsAt = new Date(user.createdAt.getTime() + 30 * 24 * 60 * 60 * 1000);
     await user.save();
     console.log(`Updated user: ${user.email}`);
   });

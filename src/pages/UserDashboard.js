@@ -1,14 +1,14 @@
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 
 export default function UserDashboard() {
     const [analyses] = useState([]); // Mock empty analyses - replace with real data
+    const { data: session, status } = useSession();
     
-    // Mock user data - replace with real user data
-    const user = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        subscription: 'free'
-    };
+    if (status === 'loading') return <div>Loading...</div>;
+    if (!session?.user) return <div className="p-8 text-center">Please log in to view your dashboard.</div>;
+    
+    const user = session.user;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -115,9 +115,17 @@ export default function UserDashboard() {
                             <div className="flex items-center justify-between">
                                 <span className="text-gray-600">Status:</span>
                                 <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
-                                    Active
+                                    {user.subscriptionStatus || 'Active'}
                                 </span>
                             </div>
+                            {user.trialEndsAt && (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-600">Trial Ends:</span>
+                                    <span className="font-semibold text-gray-900">
+                                        {new Date(user.trialEndsAt).toLocaleDateString()}
+                                    </span>
+                                </div>
+                            )}
                             {user.subscription === 'free' && (
                                 <button
                                     onClick={() => console.log('Upgrade plan clicked')}

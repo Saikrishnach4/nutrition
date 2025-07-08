@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import AuthModal from './AuthModal';
+import { useSession, signOut } from 'next-auth/react';
 
 export default function Header() {
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [authTab, setAuthTab] = useState('signin');
     const [showUserMenu, setShowUserMenu] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // Mock state - replace with real auth
-    const [user, setUser] = useState(null); // Mock user - replace with real user data
     const router = useRouter();
+    const { data: session } = useSession();
+    const user = session?.user;
 
     const handleAuthClick = (tab) => {
         setAuthTab(tab);
@@ -16,18 +17,8 @@ export default function Header() {
     };
 
     const handleSignOut = () => {
-        // TODO: Implement sign out logic
-        setIsLoggedIn(false);
-        setUser(null);
+        signOut({ callbackUrl: '/' });
         setShowUserMenu(false);
-        console.log('Sign out clicked');
-    };
-
-    // Mock user for demo purposes - remove when implementing real auth
-    const mockUser = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        subscription: 'free'
     };
 
     return (
@@ -73,17 +64,17 @@ export default function Header() {
 
                         {/* Auth Section */}
                         <div className="flex items-center space-x-4">
-                            {isLoggedIn ? (
+                            {user ? (
                                 <div className="relative">
                                     <button
                                         onClick={() => setShowUserMenu(!showUserMenu)}
                                         className="flex items-center space-x-3 bg-gray-50 hover:bg-gray-100 rounded-full px-4 py-2 transition-all duration-300"
                                     >
                                         <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white font-semibold">
-                                            {mockUser.name?.charAt(0) || mockUser.email?.charAt(0)}
+                                            {user.name?.charAt(0) || user.email?.charAt(0)}
                                         </div>
                                         <span className="hidden md:block text-gray-700 font-medium">
-                                            {mockUser.name || mockUser.email}
+                                            {user.name || user.email}
                                         </span>
                                         <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -95,10 +86,10 @@ export default function Header() {
                                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
                                             <div className="px-4 py-2 border-b border-gray-100">
                                                 <p className="text-sm font-semibold text-gray-900">
-                                                    {mockUser.name}
+                                                    {user.name}
                                                 </p>
                                                 <p className="text-xs text-gray-500">
-                                                    {mockUser.email}
+                                                    {user.email}
                                                 </p>
                                             </div>
                                             <button

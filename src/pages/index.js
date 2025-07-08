@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>NutriVision AI - Smart Food Analysis</title>
+        <title>Dishalyze AI - Smart Food Analysis</title>
         <meta name="description" content="Get instant nutrition analysis and personalized recommendations with AI-powered food recognition" />
       </Head>
       <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -18,17 +18,17 @@ export default function Home() {
                 <span className="text-2xl mr-2">🤖</span>
                 <span className="text-sm font-semibold text-gray-700">Powered by Advanced AI</span>
               </div>
-              
+
               <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
                 <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                  NutriVision
+                  Dishalyze
                 </span>
                 <br />
                 <span className="text-gray-700">Smart Food Analysis</span>
               </h1>
-              
+
               <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-                Upload a photo of your meal and get instant nutrition analysis, personalized recommendations, 
+                Upload a photo of your meal and get instant nutrition analysis, personalized recommendations,
                 and custom meal plans tailored to your body type and health goals.
               </p>
 
@@ -58,7 +58,7 @@ export default function Home() {
         {/* Features Section */}
         <div className="max-w-7xl mx-auto px-6 py-16">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose NutriVision?</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Dishalyze?</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Our AI-powered platform provides comprehensive nutrition analysis and personalized health insights
             </p>
@@ -96,7 +96,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-6 py-8">
             <div className="text-center">
               <p className="text-gray-600">
-                © 2025 NutriVision AI. Made with ❤️ for healthier living.
+                © 2025 Dishalyze AI. Made with ❤️ for healthier living.
               </p>
               <p className="text-sm text-gray-500 mt-2">
                 Always consult with healthcare professionals for medical advice.

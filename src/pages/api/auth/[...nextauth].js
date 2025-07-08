@@ -2,8 +2,8 @@ import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import dbConnect from '../../../utils/mongodb';
-import User from '../../../utils/userModel';
-import GoogleUser from '../../../utils/googleUserModel';
+import User from '../../../models/userModel';
+import GoogleUser from '../../../models/googleUserModel';
 import bcrypt from 'bcryptjs';
 
 export default NextAuth({
@@ -69,6 +69,7 @@ export default NextAuth({
         if (!dbUser) {
           const createdAt = new Date();
           const trialEndsAt = new Date(createdAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+          console.log("trialendsat",trialEndsAt);
           dbUser = await GoogleUser.create({
             name,
             email,

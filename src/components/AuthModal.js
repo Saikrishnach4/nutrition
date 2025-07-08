@@ -196,7 +196,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = 'signin' }) {
                                 name="email"
                                 value={formData.email}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border rounded-xl"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 text-gray-900 bg-white"
                                 placeholder="Email"
                                 required
                             />
@@ -205,7 +205,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = 'signin' }) {
                                 name="password"
                                 value={formData.password}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border rounded-xl"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 text-gray-900 bg-white"
                                 placeholder="Password"
                                 required
                             />
@@ -224,7 +224,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = 'signin' }) {
                                 name="name"
                                 value={formData.name}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border rounded-xl"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 text-gray-900 bg-white"
                                 placeholder="Full Name"
                                 required
                             />
@@ -233,7 +233,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = 'signin' }) {
                                 name="email"
                                 value={formData.email}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border rounded-xl"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 text-gray-900 bg-white"
                                 placeholder="Email"
                                 required
                             />
@@ -242,7 +242,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = 'signin' }) {
                                 name="password"
                                 value={formData.password}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border rounded-xl"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 text-gray-900 bg-white"
                                 placeholder="Password"
                                 required
                             />
@@ -251,7 +251,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = 'signin' }) {
                                 name="confirmPassword"
                                 value={formData.confirmPassword}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-3 border rounded-xl"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 text-gray-900 bg-white"
                                 placeholder="Confirm Password"
                                 required
                             />

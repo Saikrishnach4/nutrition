@@ -1,6 +1,6 @@
 import dbConnect from '../../../utils/mongodb';
-import User from '../../../utils/userModel';
-import GoogleUser from '../../../utils/googleUserModel';
+import User from '../../../models/userModel';
+import GoogleUser from '../../../models/googleUserModel';
 import bcrypt from 'bcryptjs';
 
 export default async function handler(req, res) {

@@ -1,7 +1,12 @@
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import AuthModal from './AuthModal';
 
 export default function PricingSection() {
     const [billingCycle, setBillingCycle] = useState('monthly');
+    const { data: session } = useSession();
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [authTab, setAuthTab] = useState('signup');
 
     const plans = [
         {
@@ -59,7 +64,12 @@ export default function PricingSection() {
     ];
 
     const handleSubscribe = (plan) => {
-        // TODO: Implement subscription logic
+        if (!session?.user) {
+            setAuthTab('signup');
+            setShowAuthModal(true);
+            return;
+        }
+        // TODO: Implement subscription logic for logged-in users
         console.log(`Selected plan: ${plan.name} - ${billingCycle}`);
         alert(`You selected ${plan.name} plan (${billingCycle}). Backend integration needed.`);
     };
@@ -204,6 +214,7 @@ export default function PricingSection() {
                     </div>
                 </div>
             </div>
+            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} defaultTab={authTab} />
         </div>
     );
 }

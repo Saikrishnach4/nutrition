@@ -1,14 +1,79 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { parseStructuredResponse, getNutritionTotals } from '../utils/parseNutrition';
 
 export default function UserDashboard() {
-    const [analyses] = useState([]); // Mock empty analyses - replace with real data
     const { data: session, status } = useSession();
+    const [analyses, setAnalyses] = useState([]);
+    const [loadingAnalyses, setLoadingAnalyses] = useState(true);
+    const [dailySummary, setDailySummary] = useState([]);
+    const [loadingSummary, setLoadingSummary] = useState(true);
     
+    useEffect(() => {
+        async function fetchAnalyses() {
+            if (!session?.user) return;
+            setLoadingAnalyses(true);
+            const res = await fetch('/api/analyses');
+            if (res.ok) {
+                const data = await res.json();
+                setAnalyses(data.analyses || []);
+            }
+            setLoadingAnalyses(false);
+        }
+        async function fetchSummary() {
+            if (!session?.user) return;
+            setLoadingSummary(true);
+            const res = await fetch('/api/analyses?summary=daily');
+            if (res.ok) {
+                const data = await res.json();
+                setDailySummary(data.daily || []);
+            }
+            setLoadingSummary(false);
+        }
+        fetchAnalyses();
+        fetchSummary();
+    }, [session?.user]);
+
     if (status === 'loading') return <div>Loading...</div>;
     if (!session?.user) return <div className="p-8 text-center">Please log in to view your dashboard.</div>;
     
     const user = session.user;
+
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        });
+    }
+
+    // Helper to compute daily summary using robust parsing
+    function computeDailySummary(analyses) {
+        const dayMap = {};
+        analyses.forEach(a => {
+            const date = a.createdAt.slice(0, 10); // YYYY-MM-DD
+            let macros = { calories: a.calories, protein: a.protein, carbs: a.carbs, fat: a.fat };
+            if (macros.calories === undefined || macros.protein === undefined || macros.carbs === undefined || macros.fat === undefined) {
+                try {
+                    const sections = parseStructuredResponse(a.result);
+                    macros = getNutritionTotals(sections);
+                } catch {}
+            }
+            if (!dayMap[date]) {
+                dayMap[date] = { date, calories: 0, protein: 0, carbs: 0, fat: 0 };
+            }
+            dayMap[date].calories += macros.calories || 0;
+            dayMap[date].protein += macros.protein || 0;
+            dayMap[date].carbs += macros.carbs || 0;
+            dayMap[date].fat += macros.fat || 0;
+        });
+        // Sort by date descending
+        return Object.values(dayMap).sort((a, b) => b.date.localeCompare(a.date));
+    }
+
+    // Use computed summary instead of API summary
+    const computedDailySummary = computeDailySummary(analyses);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -118,11 +183,19 @@ export default function UserDashboard() {
                                     {user.subscriptionStatus || 'Active'}
                                 </span>
                             </div>
+                            {user.createdAt && (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-600">Created At:</span>
+                                    <span className="font-semibold text-gray-900">
+                                        {formatDate(user.createdAt)}
+                                    </span>
+                                </div>
+                            )}
                             {user.trialEndsAt && (
                                 <div className="flex items-center justify-between">
                                     <span className="text-gray-600">Trial Ends:</span>
                                     <span className="font-semibold text-gray-900">
-                                        {new Date(user.trialEndsAt).toLocaleDateString()}
+                                        {formatDate(user.trialEndsAt)}
                                     </span>
                                 </div>
                             )}
@@ -138,6 +211,41 @@ export default function UserDashboard() {
                     </div>
                 </div>
 
+                {/* Daily Nutrition Table */}
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-8">
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">Daily Nutrition Summary</h3>
+                    {loadingAnalyses ? (
+                        <div className="text-center py-8 text-gray-500">Loading summary...</div>
+                    ) : computedDailySummary.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">No data yet. Upload food to see your daily nutrition!</div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full text-sm text-gray-800">
+                                <thead>
+                                    <tr className="bg-gray-100">
+                                        <th className="px-4 py-2 text-left">Date</th>
+                                        <th className="px-4 py-2">Calories</th>
+                                        <th className="px-4 py-2">Protein (g)</th>
+                                        <th className="px-4 py-2">Carbs (g)</th>
+                                        <th className="px-4 py-2">Fat (g)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {computedDailySummary.map((row) => (
+                                        <tr key={row.date} className="border-b">
+                                            <td className="px-4 py-2">{formatDate(row.date)}</td>
+                                            <td className="px-4 py-2">{row.calories}</td>
+                                            <td className="px-4 py-2">{row.protein}</td>
+                                            <td className="px-4 py-2">{row.carbs}</td>
+                                            <td className="px-4 py-2">{row.fat}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+
                 {/* Recent Analyses */}
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                     <div className="flex items-center justify-between mb-6">
@@ -148,24 +256,42 @@ export default function UserDashboard() {
                             </button>
                         )}
                     </div>
-
-                    {analyses.length === 0 ? (
+                    {loadingAnalyses ? (
+                        <div className="text-center py-8 text-gray-500">Loading analyses...</div>
+                    ) : analyses.length === 0 ? (
                         <div className="text-center py-12">
                             <div className="text-6xl mb-4">🍽️</div>
                             <h4 className="text-xl font-semibold text-gray-900 mb-2">No analyses yet</h4>
                             <p className="text-gray-600 mb-6">
                                 Upload your first food image to start tracking your nutrition!
                             </p>
-                            <button
-                                onClick={() => console.log('Get started clicked')}
-                                className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-emerald-600 hover:to-teal-700 transition-all duration-300"
-                            >
-                                Get Started
-                            </button>
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {/* This will show analyses when available */}
+                            {analyses.slice(0, 5).map((a) => {
+                                let macros = { calories: a.calories, protein: a.protein, carbs: a.carbs, fat: a.fat };
+                                if (macros.calories === undefined || macros.protein === undefined || macros.carbs === undefined || macros.fat === undefined) {
+                                    // Fallback: parse from result
+                                    try {
+                                        const sections = parseStructuredResponse(a.result);
+                                        macros = getNutritionTotals(sections);
+                                    } catch {}
+                                }
+                                return (
+                                    <div key={a._id} className="flex items-center justify-between bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                        <div>
+                                            <div className="font-semibold text-gray-900">{a.foodDescription || 'Food Analysis'}</div>
+                                            <div className="text-sm text-gray-500">{formatDate(a.createdAt)}</div>
+                                        </div>
+                                        <div className="flex gap-4 text-sm">
+                                            <span>🔥 {macros.calories} kcal</span>
+                                            <span>🥩 {macros.protein}g protein</span>
+                                            <span>🍚 {macros.carbs}g carbs</span>
+                                            <span>🧈 {macros.fat}g fat</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
                 </div>

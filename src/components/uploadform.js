@@ -3,8 +3,11 @@ import Image from 'next/image';
 import NutritionResult from './nutritionResult';
 import LoadingAnimation from './loadingAnimation';
 import toast from 'react-hot-toast';
+import { useSession } from 'next-auth/react';
+import AuthModal from './AuthModal';
 
 export default function UploadForm() {
+    const { data: session } = useSession();
     const [file, setFile] = useState(null);
     const [weight, setWeight] = useState('');
     const [height, setHeight] = useState('');
@@ -16,6 +19,9 @@ export default function UploadForm() {
     const [capturing, setCapturing] = useState(false);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [authTab, setAuthTab] = useState('signup');
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files?.[0];
@@ -89,28 +95,37 @@ export default function UploadForm() {
     };
 
     const handleUpload = async () => {
+        if (!session?.user) {
+            setAuthTab('signup');
+            setShowAuthModal(true);
+            return;
+        }
         if (!file || !weight || !height) {
             setError('Please provide image, weight, and height');
             return;
         }
-
+        if (weight <= 0 || height <= 0) {
+            setError('Please enter a valid positive weight and height.');
+            return;
+        }
         setLoading(true);
         setError('');
         setResult(null);
-
         try {
             const formData = new FormData();
             formData.append('image', file);
             formData.append('weight', weight);
             formData.append('height', height);
-
             const res = await fetch('/api/analyze', {
                 method: 'POST',
                 body: formData,
             });
-
             const data = await res.json();
-
+            if (res.status === 403 && data.error && data.error.includes('Free plan limit')) {
+                setShowUpgradeModal(true);
+                setLoading(false);
+                return;
+            }
             if (res.ok) {
                 setResult(data.result);
             } else {
@@ -119,7 +134,6 @@ export default function UploadForm() {
         } catch (err) {
             setError('Failed to analyze image');
         }
-
         setLoading(false);
     };
 
@@ -131,6 +145,19 @@ export default function UploadForm() {
         setResult(null);
         setError('');
     };
+
+    // Helper to require auth before any action, with event support
+    function requireAuthWithEvent(action, session, setAuthTab, setShowAuthModal) {
+        return (e, ...args) => {
+            if (!session?.user) {
+                if (e && e.preventDefault) e.preventDefault();
+                setAuthTab('signup');
+                setShowAuthModal(true);
+                return;
+            }
+            action && action(e, ...args);
+        };
+    }
 
     return (
         <div className="max-w-4xl mx-auto p-6">
@@ -161,13 +188,14 @@ export default function UploadForm() {
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    onChange={handleFileChange}
+                                    onChange={requireAuthWithEvent(handleFileChange, session, setAuthTab, setShowAuthModal)}
                                     className="hidden"
                                     id="image-upload"
                                 />
                                 <label
                                     htmlFor="image-upload"
                                     className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-all duration-300 hover:border-emerald-400 group"
+                                    onClick={requireAuthWithEvent(null, session, setAuthTab, setShowAuthModal)}
                                 >
                                     {preview ? (
                                         <div className="relative w-full h-full">
@@ -196,7 +224,7 @@ export default function UploadForm() {
                                 </label>
                                 <button
                                     type="button"
-                                    onClick={handleTakePhotoClick}
+                                    onClick={requireAuthWithEvent(handleTakePhotoClick, session, setAuthTab, setShowAuthModal)}
                                     className="absolute bottom-4 right-4 bg-emerald-500 text-white px-4 py-2 rounded-xl font-semibold shadow hover:bg-emerald-600 transition-all duration-300"
                                 >
                                     📷 Take Photo
@@ -215,7 +243,7 @@ export default function UploadForm() {
                                     type="number"
                                     placeholder="Enter your weight"
                                     value={weight}
-                                    onChange={(e) => setWeight(parseFloat(e.target.value))}
+                                    onChange={requireAuthWithEvent((e) => setWeight(parseFloat(e.target.value)), session, setAuthTab, setShowAuthModal)}
                                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-lg"
                                 />
                             </div>
@@ -230,14 +258,14 @@ export default function UploadForm() {
                                     step="0.1"
                                     placeholder="Enter your height"
                                     value={height}
-                                    onChange={(e) => setHeight(parseFloat(e.target.value))}
+                                    onChange={requireAuthWithEvent((e) => setHeight(parseFloat(e.target.value)), session, setAuthTab, setShowAuthModal)}
                                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-lg"
                                 />
                             </div>
 
                             <div className="flex gap-3 pt-4">
                                 <button
-                                    onClick={handleUpload}
+                                    onClick={requireAuthWithEvent(handleUpload, session, setAuthTab, setShowAuthModal)}
                                     disabled={loading || !file || !weight || !height}
                                     className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-4 rounded-xl font-semibold text-lg hover:from-emerald-600 hover:to-teal-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 shadow-lg hover:shadow-xl"
                                 >
@@ -256,7 +284,7 @@ export default function UploadForm() {
                                 
                                 {(file || result) && (
                                     <button
-                                        onClick={resetForm}
+                                        onClick={requireAuthWithEvent(resetForm, session, setAuthTab, setShowAuthModal)}
                                         className="px-6 py-4 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:border-gray-400 hover:bg-gray-50 transition-all duration-300"
                                     >
                                         Reset
@@ -287,6 +315,22 @@ export default function UploadForm() {
             {/* Results */}
             {result && <NutritionResult result={result} weight={weight} height={height} />}
 
+            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} defaultTab={authTab} />
+
+            {showUpgradeModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-2xl p-8 shadow-xl max-w-sm w-full text-center">
+                        <h2 className="text-xl font-bold mb-4 text-gray-900">Upgrade Required</h2>
+                        <p className="mb-6 text-gray-700">You have reached the monthly upload limit for the free plan. Please upgrade your plan to upload more than 10 analyses per month.</p>
+                        <button
+                            onClick={() => setShowUpgradeModal(false)}
+                            className="bg-emerald-500 text-white px-6 py-2 rounded-xl font-semibold hover:bg-emerald-600 transition-all duration-300"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

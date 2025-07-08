@@ -66,7 +66,7 @@ apiRoute.post(async (req, res) => {
             }
             const descMatch = result.match(/\*\*What's on the Plate\?\*\*\s*- (.*)/);
             if (descMatch) foodDescription = descMatch[1];
-        } catch {}
+        } catch { }
 
         await Analysis.create({
             userId: userDoc._id,

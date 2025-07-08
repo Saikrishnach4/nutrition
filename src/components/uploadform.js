@@ -5,6 +5,7 @@ import LoadingAnimation from './loadingAnimation';
 import toast from 'react-hot-toast';
 import { useSession } from 'next-auth/react';
 import AuthModal from './AuthModal';
+import imageCompression from 'browser-image-compression';
 
 export default function UploadForm() {
     const { data: session } = useSession();
@@ -112,8 +113,23 @@ export default function UploadForm() {
         setError('');
         setResult(null);
         try {
+            let uploadFile = file;
+            // Compress image if it's an image file
+            if (file && file.type && file.type.startsWith('image/')) {
+                const options = {
+                    maxSizeMB: 1, // Target max size (adjust as needed)
+                    maxWidthOrHeight: 1024, // Resize if needed
+                    useWebWorker: true,
+                };
+                try {
+                    uploadFile = await imageCompression(file, options);
+                } catch (compressionError) {
+                    console.error('Image compression error:', compressionError);
+                    toast.error('Image compression failed, uploading original image.');
+                }
+            }
             const formData = new FormData();
-            formData.append('image', file);
+            formData.append('image', uploadFile);
             formData.append('weight', weight);
             formData.append('height', height);
             const res = await fetch('/api/analyze', {

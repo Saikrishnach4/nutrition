@@ -13,6 +13,7 @@
     "@azure/cognitiveservices-computervision": "^8.2.0",
     "@azure/core-auth": "^1.9.0",
     "@azure/ms-rest-js": "^2.7.0",
+    "@prisma/client": "^6.11.1",
     "multer": "^2.0.1",
     "next": "15.3.5",
     "next-connect": "^0.12.2",

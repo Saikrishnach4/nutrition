@@ -96,13 +96,36 @@ export default NextAuth({
         session.user = undefined;
         session.error = token.error;
       } else {
-        if (token?.sub || token?.id) session.user.id = token.sub || token.id;
-        session.user.subscription = token.subscription || 'free';
-        session.user.subscriptionStatus = token.subscriptionStatus || 'active';
-        session.user.trialEndsAt = token.trialEndsAt;
-        session.user.createdAt = token.createdAt;
-        session.user.email = token.email;
-        session.user.name = token.name;
+        let dbUser = null;
+        await dbConnect();
+        if (token?.email) {
+          dbUser = await User.findOne({ email: token.email });
+          if (!dbUser) dbUser = await GoogleUser.findOne({ email: token.email });
+        }
+        if (dbUser) {
+          session.user.id = dbUser._id.toString();
+          session.user.subscription = dbUser.subscription || 'free';
+          session.user.subscriptionStatus = dbUser.subscriptionStatus || 'active';
+          session.user.trialEndsAt = dbUser.trialEndsAt;
+          session.user.createdAt = dbUser.createdAt;
+          session.user.email = dbUser.email;
+          session.user.name = dbUser.name;
+          session.user.height = dbUser.height;
+          session.user.weight = dbUser.weight;
+          session.user.age = dbUser.age;
+          session.user.gender = dbUser.gender;
+          session.user.activityLevel = dbUser.activityLevel;
+          session.user.dietaryPreference = dbUser.dietaryPreference;
+          session.user.healthGoal = dbUser.healthGoal;
+        } else {
+          if (token?.sub || token?.id) session.user.id = token.sub || token.id;
+          session.user.subscription = token.subscription || 'free';
+          session.user.subscriptionStatus = token.subscriptionStatus || 'active';
+          session.user.trialEndsAt = token.trialEndsAt;
+          session.user.createdAt = token.createdAt;
+          session.user.email = token.email;
+          session.user.name = token.name;
+        }
       }
       return session;
     }

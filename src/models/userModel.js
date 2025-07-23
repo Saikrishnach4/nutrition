@@ -7,6 +7,13 @@ const UserSchema = new mongoose.Schema({
   subscription: { type: String, default: 'free' },
   subscriptionStatus: { type: String, default: 'active' },
   trialEndsAt: { type: Date },
+  weight: { type: Number },
+  height: { type: Number }, // Height in feet
+  age: { type: Number },
+  gender: { type: String },
+  activityLevel: { type: String },
+  dietaryPreference: { type: String },
+  healthGoal: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
 

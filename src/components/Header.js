@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import AuthModal from './AuthModal';
 import { useSession, signOut } from 'next-auth/react';
@@ -8,17 +8,39 @@ export default function Header() {
     const [authTab, setAuthTab] = useState('signin');
     const [showUserMenu, setShowUserMenu] = useState(false);
     const router = useRouter();
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const user = session?.user;
 
+    // Close user menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (showUserMenu && !event.target.closest('.user-menu-container')) {
+                setShowUserMenu(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showUserMenu]);
+
     const handleAuthClick = (tab) => {
+        console.log('Auth button clicked:', tab); // Debug log
         setAuthTab(tab);
         setShowAuthModal(true);
     };
 
-    const handleSignOut = () => {
-        signOut({ callbackUrl: '/' });
-        setShowUserMenu(false);
+    const handleSignOut = async () => {
+        try {
+            await signOut({ callbackUrl: '/' });
+            setShowUserMenu(false);
+        } catch (error) {
+            console.error('Sign out error:', error);
+        }
+    };
+
+    const handleCloseModal = () => {
+        console.log('Closing modal'); // Debug log
+        setShowAuthModal(false);
     };
 
     return (
@@ -27,7 +49,7 @@ export default function Header() {
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
                         {/* Logo */}
-                        <div 
+                        <div
                             className="flex items-center cursor-pointer"
                             onClick={() => router.push('/')}
                         >
@@ -42,20 +64,20 @@ export default function Header() {
 
                         {/* Navigation */}
                         <nav className="hidden md:flex items-center space-x-8">
-                            <a 
-                                href="#features" 
+                            <a
+                                href="#features"
                                 className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
                             >
                                 Features
                             </a>
-                            <a 
-                                href="#pricing" 
+                            <a
+                                href="#pricing"
                                 className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
                             >
                                 Pricing
                             </a>
-                            <a 
-                                href="#about" 
+                            <a
+                                href="#about"
                                 className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
                             >
                                 About
@@ -64,8 +86,10 @@ export default function Header() {
 
                         {/* Auth Section */}
                         <div className="flex items-center space-x-4">
-                            {user ? (
-                                <div className="relative">
+                            {status === 'loading' ? (
+                                <div className="animate-pulse bg-gray-200 h-8 w-20 rounded"></div>
+                            ) : user ? (
+                                <div className="relative user-menu-container">
                                     <button
                                         onClick={() => setShowUserMenu(!showUserMenu)}
                                         className="flex items-center space-x-3 bg-gray-50 hover:bg-gray-100 rounded-full px-4 py-2 transition-all duration-300"
@@ -76,7 +100,7 @@ export default function Header() {
                                         <span className="hidden md:block text-gray-700 font-medium">
                                             {user.name || user.email}
                                         </span>
-                                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className={`w-4 h-4 text-gray-500 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
@@ -151,9 +175,9 @@ export default function Header() {
             </header>
 
             {/* Auth Modal */}
-            <AuthModal 
+            <AuthModal
                 isOpen={showAuthModal}
-                onClose={() => setShowAuthModal(false)}
+                onClose={handleCloseModal}
                 defaultTab={authTab}
             />
         </>

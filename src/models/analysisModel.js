@@ -13,6 +13,7 @@ const AnalysisSchema = new mongoose.Schema({
   carbs: { type: Number },
   fat: { type: Number },
   bmi: { type: Number },
+  structuredNutrition: { type: Array }, // Parsed JSON array from AI response
   source: { type: String, default: 'ai' },
   createdAt: { type: Date, default: Date.now },
 });

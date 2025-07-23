@@ -176,7 +176,7 @@ export default function Header() {
 
             {/* Auth Modal */}
             <AuthModal
-                isOpen={showAuthModal}
+                open={showAuthModal}
                 onClose={handleCloseModal}
                 defaultTab={authTab}
             />

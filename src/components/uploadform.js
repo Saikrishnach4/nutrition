@@ -393,7 +393,7 @@ export default function UploadForm() {
             {/* Results */}
             {result && <NutritionResult result={result} weight={weight} height={height} />}
 
-            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} defaultTab={authTab} />
+            <AuthModal open={showAuthModal} onClose={() => setShowAuthModal(false)} defaultTab={authTab} />
 
             {showUpgradeModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">

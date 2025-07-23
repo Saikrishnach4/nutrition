@@ -214,7 +214,7 @@ export default function PricingSection() {
                     </div>
                 </div>
             </div>
-            <AuthModal open={showAuthModal} onClose={() => setShowAuthModal(false)} defaultTab={authTab} />
+            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} defaultTab={authTab} />
         </div>
     );
 }

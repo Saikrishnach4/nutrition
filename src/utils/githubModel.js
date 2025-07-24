@@ -6,6 +6,7 @@ const model = "openai/gpt-4o";
 const token = process.env.GITHUB_TOKEN;
 
 export async function callGitHubModelVision(base64Image, weight, height, manualPrompt) {
+    // weight and height are now always sourced from user profile, not from upload form
     const client = ModelClient(endpoint, new AzureKeyCredential(token));
 
     let userMessage;

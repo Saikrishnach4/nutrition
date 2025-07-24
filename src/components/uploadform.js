@@ -10,8 +10,6 @@ import imageCompression from 'browser-image-compression';
 export default function UploadForm() {
     const { data: session } = useSession();
     const [file, setFile] = useState(null);
-    const [weight, setWeight] = useState('');
-    const [height, setHeight] = useState('');
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState('');
@@ -107,12 +105,8 @@ export default function UploadForm() {
             setShowAuthModal(true);
             return;
         }
-        if (!file || !weight || !height) {
-            setError('Please provide image, weight, and height');
-            return;
-        }
-        if (weight <= 0 || height <= 0) {
-            setError('Please enter a valid positive weight and height.');
+        if (!file) {
+            setError('Please provide an image');
             return;
         }
         setLoading(true);
@@ -136,8 +130,6 @@ export default function UploadForm() {
             }
             const formData = new FormData();
             formData.append('image', uploadFile);
-            formData.append('weight', weight);
-            formData.append('height', height);
             const res = await fetch('/api/analyze', {
                 method: 'POST',
                 body: formData,
@@ -165,11 +157,6 @@ export default function UploadForm() {
         setManualLoading(true);
         setManualError('');
         setResult(null);
-        if (!weight || !height) {
-            setManualError('Please enter your weight and height.');
-            setManualLoading(false);
-            return;
-        }
         try {
             const res = await fetch('/api/analyze', {
                 method: 'POST',
@@ -177,9 +164,7 @@ export default function UploadForm() {
                 body: JSON.stringify({
                     manual: true,
                     description: manualDescription,
-                    items: manualItems,
-                    weight: Number(weight),
-                    height: Number(height)
+                    items: manualItems
                 })
             });
             const data = await res.json();
@@ -200,8 +185,6 @@ export default function UploadForm() {
     const resetForm = () => {
         setFile(null);
         setPreview(null);
-        setWeight('');
-        setHeight('');
         setResult(null);
         setError('');
     };
@@ -321,8 +304,8 @@ export default function UploadForm() {
                                 style={{ color: "black" }}
                                 type="number"
                                 placeholder="Enter your weight"
-                                value={weight}
-                                onChange={requireAuthWithEvent((e) => setWeight(parseFloat(e.target.value)), session, setAuthTab, setShowAuthModal)}
+                                value=""
+                                onChange={requireAuthWithEvent((e) => {}, session, setAuthTab, setShowAuthModal)}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-lg"
                             />
                         </div>
@@ -336,8 +319,8 @@ export default function UploadForm() {
                                 type="number"
                                 step="0.1"
                                 placeholder="Enter your height"
-                                value={height}
-                                onChange={requireAuthWithEvent((e) => setHeight(parseFloat(e.target.value)), session, setAuthTab, setShowAuthModal)}
+                                value=""
+                                onChange={requireAuthWithEvent((e) => {}, session, setAuthTab, setShowAuthModal)}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-lg"
                             />
                         </div>
@@ -345,7 +328,7 @@ export default function UploadForm() {
                         <div className="flex gap-3 pt-4">
                             <button
                                 onClick={requireAuthWithEvent(handleUpload, session, setAuthTab, setShowAuthModal)}
-                                disabled={loading || !file || !weight || !height}
+                                disabled={loading || !file}
                                 className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-4 rounded-xl font-semibold text-lg hover:from-emerald-600 hover:to-teal-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 shadow-lg hover:shadow-xl"
                             >
                                 {loading ? (
@@ -391,7 +374,7 @@ export default function UploadForm() {
             {loading && <LoadingAnimation />}
 
             {/* Results */}
-            {result && <NutritionResult result={result} weight={weight} height={height} />}
+            {result && <NutritionResult result={result} weight="" height="" />}
 
             <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} defaultTab={authTab} />
 

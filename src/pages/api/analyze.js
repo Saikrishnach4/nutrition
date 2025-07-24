@@ -40,10 +40,10 @@ apiRoute.post(async (req, res) => {
             let body = req.body;
             if (typeof body === 'string') body = JSON.parse(body);
             if (body.manual) {
-                const { description, items, weight, height } = body;
-                if (!weight || !height || isNaN(Number(weight)) || isNaN(Number(height))) {
-                    return res.status(400).json({ error: 'Weight and height are required and must be numbers.' });
-                }
+                const { description, items } = body;
+                // Get weight/height from userDoc
+                const weight = userDoc.weight;
+                const height = userDoc.height;
                 // Build a prompt for the AI
                 const itemsText = items.map(i => `- ${i.name}, ${i.quantity}${i.preparation ? ` (${i.preparation})` : ''}`).join('\n');
                 const manualPrompt = `A user has entered their meal manually.\n\nDescription: ${description}\n\nItems:\n${itemsText}\n\nUser Details:\n- Weight: ${weight} kg\n- Height: ${height} feet\n\nPlease analyze the meal and return:\n1. A JSON array for each food item (mealType, foodName, calories, protein, carbs, fat)\n2. Then, a markdown nutrition report as usual.`;
@@ -88,7 +88,9 @@ apiRoute.post(async (req, res) => {
 
         const imagePath = req.file.path;
         const base64Image = fs.readFileSync(imagePath, "base64");
-        const { weight, height } = req.body;
+        const { /*weight, height*/ } = req.body;
+        const weight = userDoc.weight;
+        const height = userDoc.height;
 
         const result = await callGitHubModelVision(base64Image, weight, height);
 
@@ -168,7 +170,10 @@ export default async function handler(req, res) {
       let userDoc = await User.findOne({ email: session.user.email });
       if (!userDoc) userDoc = await GoogleUser.findOne({ email: session.user.email });
       if (!userDoc) return res.status(401).json({ error: 'User not found.' });
-      const { description, items, weight, height } = body;
+      const { description, items } = body;
+      // Get weight/height from userDoc
+      const weight = userDoc.weight;
+      const height = userDoc.height;
       if (!weight || !height || isNaN(Number(weight)) || isNaN(Number(height))) {
         return res.status(400).json({ error: 'Weight and height are required and must be numbers.' });
       }

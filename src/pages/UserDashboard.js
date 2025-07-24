@@ -8,6 +8,18 @@ export default function UserDashboard() {
     const [loadingAnalyses, setLoadingAnalyses] = useState(true);
     const [dailySummary, setDailySummary] = useState([]);
     const [loadingSummary, setLoadingSummary] = useState(true);
+    const [showProfileModal, setShowProfileModal] = useState(false);
+    const [profileForm, setProfileForm] = useState({
+        name: user.name || '',
+        height: user.height || '',
+        weight: user.weight || '',
+        age: user.age || '',
+        gender: user.gender || '',
+        activityLevel: user.activityLevel || '',
+        dietaryPreference: user.dietaryPreference || '',
+        healthGoal: user.healthGoal || '',
+    });
+    const [profileMessage, setProfileMessage] = useState('');
     
     useEffect(() => {
         async function fetchAnalyses() {
@@ -74,6 +86,28 @@ export default function UserDashboard() {
 
     // Use computed summary instead of API summary
     const computedDailySummary = computeDailySummary(analyses);
+
+    const handleProfileChange = (e) => {
+        setProfileForm({ ...profileForm, [e.target.name]: e.target.value });
+    };
+
+    const handleProfileSubmit = async (e) => {
+        e.preventDefault();
+        setProfileMessage('');
+        const res = await fetch('/api/auth/[...nextauth]', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(profileForm),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            setProfileMessage('Profile updated successfully!');
+            setShowProfileModal(false);
+            // Optionally, refresh the page or session
+        } else {
+            setProfileMessage(data.message || 'Failed to update profile.');
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -154,7 +188,7 @@ export default function UserDashboard() {
                             </button>
                             
                             <button
-                                onClick={() => console.log('Update profile clicked')}
+                                onClick={() => setShowProfileModal(true)}
                                 className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors"
                             >
                                 <div className="flex items-center">
@@ -296,6 +330,71 @@ export default function UserDashboard() {
                     )}
                 </div>
             </div>
+            {showProfileModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+                    <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
+                        <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-600" onClick={() => setShowProfileModal(false)}>&times;</button>
+                        <h2 className="text-xl font-bold mb-4">Update Profile</h2>
+                        <form onSubmit={handleProfileSubmit} className="space-y-4">
+                            <div>
+                                <label className="block font-semibold mb-1">Name</label>
+                                <input type="text" name="name" value={profileForm.name} onChange={handleProfileChange} className="w-full border rounded px-3 py-2" />
+                            </div>
+                            <div>
+                                <label className="block font-semibold mb-1">Height (ft)</label>
+                                <input type="text" name="height" value={profileForm.height} onChange={handleProfileChange} className="w-full border rounded px-3 py-2" />
+                            </div>
+                            <div>
+                                <label className="block font-semibold mb-1">Weight (kg)</label>
+                                <input type="text" name="weight" value={profileForm.weight} onChange={handleProfileChange} className="w-full border rounded px-3 py-2" />
+                            </div>
+                            <div>
+                                <label className="block font-semibold mb-1">Age</label>
+                                <input type="number" name="age" value={profileForm.age} onChange={handleProfileChange} className="w-full border rounded px-3 py-2" />
+                            </div>
+                            <div>
+                                <label className="block font-semibold mb-1">Gender</label>
+                                <select name="gender" value={profileForm.gender} onChange={handleProfileChange} className="w-full border rounded px-3 py-2">
+                                    <option value="">Select</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block font-semibold mb-1">Activity Level</label>
+                                <select name="activityLevel" value={profileForm.activityLevel} onChange={handleProfileChange} className="w-full border rounded px-3 py-2">
+                                    <option value="">Select</option>
+                                    <option value="Sedentary">Sedentary</option>
+                                    <option value="Lightly Active">Lightly Active</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Very Active">Very Active</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block font-semibold mb-1">Dietary Preference</label>
+                                <select name="dietaryPreference" value={profileForm.dietaryPreference} onChange={handleProfileChange} className="w-full border rounded px-3 py-2">
+                                    <option value="">Select</option>
+                                    <option value="Vegetarian">Vegetarian</option>
+                                    <option value="Vegan">Vegan</option>
+                                    <option value="Mixed">Mixed</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block font-semibold mb-1">Health Goal</label>
+                                <select name="healthGoal" value={profileForm.healthGoal} onChange={handleProfileChange} className="w-full border rounded px-3 py-2">
+                                    <option value="">Select</option>
+                                    <option value="Lose Weight">Lose Weight</option>
+                                    <option value="Maintain Weight">Maintain Weight</option>
+                                    <option value="Gain Weight">Gain Weight</option>
+                                </select>
+                            </div>
+                            <button type="submit" className="bg-emerald-600 text-white px-4 py-2 rounded">Update Profile</button>
+                            {profileMessage && <div className="text-center text-sm text-gray-600 mt-2">{profileMessage}</div>}
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

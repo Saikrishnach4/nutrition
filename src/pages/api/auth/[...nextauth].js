@@ -5,6 +5,7 @@ import dbConnect from '../../../utils/mongodb';
 import User from '../../../models/userModel';
 import GoogleUser from '../../../models/googleUserModel';
 import bcrypt from 'bcryptjs';
+import { getToken } from 'next-auth/jwt';
 
 export default NextAuth({
   providers: [
@@ -113,3 +114,34 @@ export default NextAuth({
   },
   secret: process.env.NEXTAUTH_SECRET
 });
+
+export async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  if (!token || !token.email) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  await dbConnect();
+  const { name, height, weight, age, gender, activityLevel, dietaryPreference, healthGoal } = req.body;
+  const update = { name, height, weight, age, gender, activityLevel, dietaryPreference, healthGoal };
+  // Remove undefined fields
+  Object.keys(update).forEach(key => update[key] === undefined && delete update[key]);
+  let user = await User.findOneAndUpdate(
+    { email: token.email },
+    { $set: update },
+    { new: true }
+  );
+  if (!user) {
+    user = await GoogleUser.findOneAndUpdate(
+      { email: token.email },
+      { $set: update },
+      { new: true }
+    );
+  }
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+  return res.status(200).json({ message: 'Profile updated', user });
+}

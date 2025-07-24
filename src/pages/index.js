@@ -55,7 +55,7 @@ export default function Home() {
         </div>
 
         {/* Main Content */}
-        <div className="relative">
+        <div className="relative" id="upload-section">
           <UploadForm />
         </div>
 

@@ -14,6 +14,7 @@ import {
     ArcElement,
 } from 'chart.js';
 import AuthModal from '../components/AuthModal';
+import { useRouter } from 'next/router';
 
 ChartJS.register(
     CategoryScale,
@@ -311,6 +312,8 @@ export default function UserDashboard() {
     // Use computed summary instead of API summary
     const computedDailySummary = computeDailySummary(analyses);
 
+    const router = useRouter();
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
             <div className="max-w-7xl mx-auto px-6 py-8">
@@ -478,7 +481,17 @@ export default function UserDashboard() {
                         <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
                         <div className="space-y-3">
                             <button
-                                onClick={() => console.log('Analyze new food clicked')}
+                                onClick={() => {
+                                    router.push('/').then(() => {
+                                        // Wait for navigation, then scroll
+                                        setTimeout(() => {
+                                            const el = document.getElementById('upload-section');
+                                            if (el) {
+                                                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                            }
+                                        }, 300);
+                                    });
+                                }}
                                 className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-300"
                             >
                                 <div className="flex items-center">
